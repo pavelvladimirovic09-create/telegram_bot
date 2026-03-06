@@ -1,0 +1,88 @@
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+
+TOKEN = "8642952909:AAFH8Hc9t_TqKtiT_ib8wUzCJiiF4Ai6C-s"
+
+shopping_list = []
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Привет! 👋\n"
+        "Я семейный бот.\n\n"
+        "Команды:\n"
+        "/buy товар — добавить в список\n"
+        "/list — показать список\n"
+        "/clear — очистить список\n"
+        "/help — помощь"
+    )
+
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Команды:\n"
+        "/buy товар — добавить покупку\n"
+        "/list — показать список\n"
+        "/clear — очистить список"
+    )
+
+
+async def buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if context.args:
+
+        item = " ".join(context.args)
+        shopping_list.append(item)
+
+        await update.message.reply_text(f"Добавлено в список: {item}")
+
+    else:
+
+        await update.message.reply_text("Напиши товар после команды.\nПример:\n/buy молоко")
+
+
+async def show_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if shopping_list:
+
+        text = "🛒 Список покупок:\n\n"
+
+        for i, item in enumerate(shopping_list, start=1):
+            text += f"{i}. {item}\n"
+
+        await update.message.reply_text(text)
+
+    else:
+
+        await update.message.reply_text("Список покупок пуст.")
+
+
+async def clear_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    shopping_list.clear()
+
+    await update.message.reply_text("Список покупок очищен.")
+
+
+async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    text = update.message.text
+
+    await update.message.reply_text(f"Ты написал: {text}")
+
+
+if __name__ == "__main__":
+
+    app = ApplicationBuilder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("buy", buy))
+    app.add_handler(CommandHandler("list", show_list))
+    app.add_handler(CommandHandler("clear", clear_list))
+
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message))
+
+    print("Бот запущен...")
+
+    app.run_polling()
