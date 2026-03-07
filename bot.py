@@ -1,5 +1,6 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from datetime import datetime
 import os
 
 # Переменная окружения с токеном
@@ -66,10 +67,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text.startswith("/add"):
         item = text.replace("/add ", "").strip()
         if item:
-            shopping_list.append(item)
+            from datetime import datetime
+            date_now = datetime.now().strftime("%d.%m.%Y %H:%M")
+
+            item_with_date = f"{item} — {date_now}"
+
+            shopping_list.append(item_with_date)
             save_list(shopping_list)
-            history.append(f"{update.effective_user.username} добавил: {item}")
-            await update.message.reply_text(f"{item} добавлен!")
+
+            history.append(f"{update.effective_user.username} добавил: {item_with_date}")
+
+        await update.message.reply_text(f"{item} добавлен!")
     elif text.startswith("❌ Удалить"):
         await update.message.reply_text("Отправь название продукта после команды /remove")
     elif text.startswith("/remove"):
